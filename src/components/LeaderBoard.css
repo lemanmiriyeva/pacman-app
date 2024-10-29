@@ -1,0 +1,185 @@
+
+
+.leaderboard {
+    text-align: center;
+    /* max-width: 320px; */
+    width: 90%;
+    margin: auto;
+}
+
+.leaderboard .scores ul{
+    height: 300px;
+    position: relative;
+    overflow-y: scroll;
+    padding-right: 10px !important;
+
+}
+
+
+.leaderboard .scores ul::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	background-color: transparent;
+	border-radius: 10px;
+    margin-left: 10px;
+
+}
+
+
+.leaderboard .scores ul::-webkit-scrollbar
+{
+	width: 3px;
+	background-color: transparent;
+}
+
+
+.leaderboard .scores ul::-webkit-scrollbar-thumb
+{
+	border-radius: 10px;
+	background-image: -webkit-gradient(linear,
+									   left bottom,
+									   left top,
+									   color-stop(0.44, rgb(122,153,217)),
+									   color-stop(0.72, rgb(73,125,189)),
+									   color-stop(0.86, rgb(28,58,148)));
+}
+.leaderboard .logo {
+    width: 150px !important;
+    margin: 20px auto;
+    
+    
+}
+@media(min-width:768px){
+    .leaderboard {
+        max-width: 80%;
+    }
+}
+
+
+.leaderboard .scores h2 {
+    color: #fff;
+    font-size: 16px;
+    margin: 10px 0;
+    letter-spacing: 1px;
+}
+
+
+.leaderboard .trophy-icon {
+    font-size: 24px;
+    position: relative;
+    margin-bottom: 10px;
+}
+.trophy-icon {
+    position: relative;
+    display: inline-block; /* Allows for positioning */
+    padding: 0 20px; /* Adds some space around the icon */
+}
+
+.trophy-icon::before,
+.trophy-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 70%; /* Line thickness */
+    height: 2px; /* Line height */
+    background-color: #fff; /* Line color */
+    transform: translateY(-50%); /* Center the lines vertically */
+    background: linear-gradient(90deg, rgba(96, 190, 197, 0) 0%, rgba(96, 190, 197, 0.75) 50%, rgba(96, 190, 197, 0) 100%);
+    box-shadow: 0 7px 15px rgb(0, 0, 128,0.75); 
+}
+
+.trophy-icon::before {
+    left: -25px; /* Adjust to your desired position */
+}
+
+.trophy-icon::after {
+    right: -25px; /* Adjust to your desired position */
+}
+
+
+.leaderboard .scores ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+
+.leaderboard .scores li {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    padding: 15px 0;
+}
+
+.leaderboard .leaderboard-item {
+    position: relative;
+}
+.leaderboard-item::after{
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(96, 190, 197, 0) 0%, rgba(96, 190, 197, 0.75) 50%, rgba(96, 190, 197, 0) 100%);
+    box-shadow: 0 7px 15px rgb(0, 0, 128,0.75); 
+}
+
+
+.leaderboard .name {
+    flex: 1; /* Name takes available space */
+    text-align: left;
+}
+
+
+.leaderboard .dots {
+    width: 50px; /* Fixed width to align all dots in the same column */
+    text-align: center;
+}
+
+
+.leaderboard .score {
+    flex: 1; /* Score also takes available space */
+    text-align: right;
+}
+
+
+.leaderboard .play-again {
+    background: -webkit-linear-gradient(358deg, #f36f0b,#a40732,#e71a39);/* Chrome 10-25, Safari 5.1-6 */                          
+    background: linear-gradient(358deg, #f36f0b,#a40732,#e71a39);/* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */                                             
+    color: #fff;
+    border: none;
+    display: block;
+    width: max-content;
+    padding: 20px 40px;
+    margin: 20px auto;
+    border-radius: 10px;
+    text-decoration: none;
+
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+footer p {
+    font-size: 11px !important;
+    line-height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap:6px;
+    color: #fff;
+    margin-top: 20px;
+}
+@media(max-width:767px){
+    .leaderboard .scores li,.leaderboard .score{
+        font-size: 12px !important;
+    }
+}
+@media(max-width:767px){
+   
+.leaderboard  .play-again{
+        font-size: 14px !important;
+        padding: 14px 28px !important;
+    }
+}
