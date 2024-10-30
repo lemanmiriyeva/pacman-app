@@ -28,6 +28,51 @@ const GameBoard = () => {
 
   const [ghostsExitBox, setGhostsExitBox] = useState(false); 
 
+
+
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+      // Initialize the Telegram WebApp
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+  
+      // Get user data from Telegram
+      const userData = tg.initDataUnsafe?.user;
+      if (userData) {
+        setUser(userData);
+      }
+    }, []);
+
+  const postUserData = async (id,username,score) => {
+    
+
+    try {
+        const response = await fetch('http://localhost:8000/add_user/', {  // Replace with your API URL
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                user_id:id,
+                username: username,
+                score:score,
+                
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        
+        const data = await response.json();
+        console.log('User data posted successfully:', data);
+    } catch (error) {
+        console.error('Error posting user data:', error);
+    }
+};
+
+
+
   const pauseGame = () => {
     setPaused(true);
   };
@@ -210,10 +255,15 @@ useEffect(() => {
 
       if (newLives === 0) {
         setGameState(prevState => ({
-          ...prevState,
-          gameOver: true,
+            ...prevState,
+            gameOver: true,
         }));
-      } else {
+        const user_id =user?.id; // Get the user ID from the Telegram user object
+        const score = gameState.score; // Get the current score
+        const randomUsername =user?.username; // Generate a random username
+        postUserData(user_id,randomUsername,score); // Call your function here
+    }
+     else {
         setTimeout(() => {
           setGameState(prevState => ({
             ...prevState,
@@ -238,7 +288,12 @@ useEffect(() => {
 
     if (newDots.length === 0) {
       setGameWon(true);
-    }
+      const user_id =user?.id; // Get the user ID from the Telegram user object
+    const score = gameState.score; // Get the current score
+    const randomUsername =user?.username; // Generate a random username
+          postUserData(user_id,randomUsername,score); // Call your function here
+  }
+  
   };
 
 
@@ -320,17 +375,53 @@ useEffect(() => {
   const renderLives = () => {
     return <div className="lives-container"><img className='heart-icon' src='/heart.png'/><span style={{letterSpacing:"2px"}}>X{gameState.lives}</span></div>;
   };
-  const saveGame = () => {
-    // Add logic to save the gameState to localStorage or another storage mechanism
-    localStorage.setItem('savedGameState', JSON.stringify(gameState));
-  };
 
-  const quitGame = () => {
-    // Navigate to the main menu or any route you prefer
-    setGameStarted(false); // Example: if you have a main menu at the start
-    setGameState(initializeGame()); // Reset game state if needed
-    window.location.href="/"
-  };
+
+
+
+
+const saveGame = async () => {
+    const user_id =user?.id; // Get the user ID from the Telegram user object
+    const score = gameState.score; // Get the current score
+    const randomUsername =user?.username; // Generate a random username
+
+    // Create an object to store in localStorage
+    const gameData = {
+        user_id: user_id,  // Ensure user ID is properly set
+        username: randomUsername,
+        score: score,
+    };
+
+    // Save the game data to localStorage
+    localStorage.setItem('savedGameData', JSON.stringify(gameData));
+
+    // Retrieve data from localStorage
+    const savedData = JSON.parse(localStorage.getItem('savedGameData'));
+
+    if (!savedData) {
+        console.error('No saved game data found');
+        return;
+    }
+
+    const { user_id: id, username, score: userScore } = savedData; // Destructure the retrieved data
+
+    // Post user data
+    await postUserData(id, username, userScore);
+};
+
+
+const quitGame = async () => {
+  await saveGame(); // Ensure game is saved before resetting
+
+  setGameStarted(false);
+  setGameState(initializeGame());
+  
+  // Use setTimeout to allow the save to complete before redirecting
+  setTimeout(() => {
+      window.location.href = "/"; // Redirect or handle navigation
+  }, 1000); // Wait a moment before redirecting
+};
+
 
 
   return (
