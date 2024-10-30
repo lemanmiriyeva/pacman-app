@@ -1,6 +1,6 @@
 // src/Leaderboard.jsx
 import React from 'react';
-import './Leaderboard.css'; // Import the CSS file for styling
+import './LeaderBoard.css'; // Import the CSS file for styling
 import { Link } from 'react-router-dom';
 
 const Leaderboard = () => {
