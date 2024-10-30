@@ -25,51 +25,77 @@ const GameBoard = () => {
   const [isInvincible, setIsInvincible] = useState(false);
   const [isDying, setIsDying] = useState(false);
   const [paused, setPaused] = useState(false);
-
-  const [ghostsExitBox, setGhostsExitBox] = useState(false); 
-
-
-
+  const [ghostsExitBox, setGhostsExitBox] = useState(false);
   const [user, setUser] = useState(null);
-  useEffect(() => {
-      // Initialize the Telegram WebApp
-      const tg = window.Telegram.WebApp;
-      tg.ready();
-  
-      // Get user data from Telegram
-      const userData = tg.initDataUnsafe?.user;
-      if (userData) {
-        setUser(userData);
-      }
-    }, []);
 
-  const postUserData = async (id,username,score) => {
-    
+  const [lastScore, setLastScore] = useState(null);
+  const [hasScore, setHasScore] = useState(false);
+
+  useEffect(() => {
+      const fetchUserScore = async (userId) => {
+          try {
+              const response = await fetch(`https://pacman-backend.vercel.app/user_score/${userId}/`);
+              const data = await response.json();
+              
+              if (data?.last_score !== undefined) {
+                  setLastScore(data.last_score);
+                  setHasScore(true);
+              } else {
+                  setHasScore(false);
+              }
+          } catch (error) {
+              console.error("Failed to fetch user score:", error);
+          }
+      };
+
+      // Assuming you have the user ID from the Telegram API:
+      const userId = user?.id;
+      if (userId) {
+          fetchUserScore(userId);
+      }
+  }, [user]);
+
+
+
+  useEffect(() => {
+    // Initialize the Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+
+    // Get user data from Telegram
+    const userData = tg.initDataUnsafe?.user;
+    if (userData) {
+      setUser(userData);
+    }
+  }, []);
+
+  const postUserData = async (id, username, score) => {
+
 
     try {
-        const response = await fetch('https://pacman-backend.vercel.app/add_user/', {  // Replace with your API URL
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                user_id:id,
-                username: username,
-                score:score,
-                
-            }),
-        });
+      const response = await fetch('https://pacman-backend.vercel.app/add_user/', {  // Replace with your API URL
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: id,
+          username: username,
+          score: score,
 
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        
-        const data = await response.json();
-        console.log('User data posted successfully:', data);
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      console.log('User data posted successfully:', data);
     } catch (error) {
-        console.error('Error posting user data:', error);
+      console.error('Error posting user data:', error);
     }
-};
+  };
 
 
 
@@ -88,10 +114,10 @@ const GameBoard = () => {
   const getValidMoves = (ghost) => {
     const moves = [];
     const potentialMoves = [
-      { x: ghost.x, y: ghost.y - 1 }, 
+      { x: ghost.x, y: ghost.y - 1 },
       { x: ghost.x, y: ghost.y + 1 },
       { x: ghost.x - 1, y: ghost.y },
-      { x: ghost.x + 1, y: ghost.y }, 
+      { x: ghost.x + 1, y: ghost.y },
     ];
 
     for (const move of potentialMoves) {
@@ -100,8 +126,8 @@ const GameBoard = () => {
         move.x < BOARD_SIZE &&
         move.y >= 0 &&
         move.y < BOARD_SIZE &&
-        MAZE[move.y][move.x] !== 1 && 
-        !isInRestrictedArea(move.x, move.y) 
+        MAZE[move.y][move.x] !== 1 &&
+        !isInRestrictedArea(move.x, move.y)
       ) {
         moves.push(move);
       }
@@ -113,7 +139,7 @@ const GameBoard = () => {
   const moveGhosts = (ghosts) => {
     return ghosts.map((ghost) => {
       const validMoves = getValidMoves(ghost);
-      if (validMoves.length === 0) return ghost; 
+      if (validMoves.length === 0) return ghost;
 
       const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
       return { ...ghost, x: randomMove.x, y: randomMove.y };
@@ -121,7 +147,7 @@ const GameBoard = () => {
   };
 
 
-useEffect(() => {
+  useEffect(() => {
     let ghostInterval;
 
     if (gameStarted && !gameState.gameOver && !gameWon && !isDying && !paused) {
@@ -224,10 +250,10 @@ useEffect(() => {
         newPosition.y = Math.max(0, newPosition.y - 1);
         break;
       case 'DOWN':
-        newPosition.y = Math.min(BOARD_SIZE - 1, newPosition.y + 1); 
+        newPosition.y = Math.min(BOARD_SIZE - 1, newPosition.y + 1);
         break;
       case 'LEFT':
-        newPosition.x = Math.max(0, newPosition.x - 1); 
+        newPosition.x = Math.max(0, newPosition.x - 1);
         break;
       case 'RIGHT':
         newPosition.x = Math.min(BOARD_SIZE - 1, newPosition.x + 1);
@@ -255,15 +281,15 @@ useEffect(() => {
 
       if (newLives === 0) {
         setGameState(prevState => ({
-            ...prevState,
-            gameOver: true,
+          ...prevState,
+          gameOver: true,
         }));
-        const user_id =user?.id; // Get the user ID from the Telegram user object
+        const user_id = user?.id; // Get the user ID from the Telegram user object
         const score = gameState.score; // Get the current score
-        const randomUsername =user?.username; // Generate a random username
-        postUserData(user_id,randomUsername,score); // Call your function here
-    }
-     else {
+        const randomUsername = user?.username; // Generate a random username
+        postUserData(user_id, randomUsername, score); // Call your function here
+      }
+      else {
         setTimeout(() => {
           setGameState(prevState => ({
             ...prevState,
@@ -274,7 +300,7 @@ useEffect(() => {
         }, 3000);
       }
 
-      return; 
+      return;
     }
 
     const newDots = collectDot(newPosition, gameState.dots);
@@ -288,12 +314,12 @@ useEffect(() => {
 
     if (newDots.length === 0) {
       setGameWon(true);
-      const user_id =user?.id; // Get the user ID from the Telegram user object
-    const score = gameState.score; // Get the current score
-    const randomUsername =user?.username; // Generate a random username
-          postUserData(user_id,randomUsername,score); // Call your function here
-  }
-  
+      const user_id = user?.id; // Get the user ID from the Telegram user object
+      const score = gameState.score; // Get the current score
+      const randomUsername = user?.username; // Generate a random username
+      postUserData(user_id, randomUsername, score); // Call your function here
+    }
+
   };
 
 
@@ -340,19 +366,19 @@ useEffect(() => {
       (x === maxX || [0, 3].includes(cellRight)) && cellLeft === 1;
 
     const isStartOfVerticalWall =
-      (y === 0 || [0, 3].includes(cellAbove)) && 
-      cellBelow === 1 && 
-      (cellLeft !== 1 || cellRight !== 1); 
+      (y === 0 || [0, 3].includes(cellAbove)) &&
+      cellBelow === 1 &&
+      (cellLeft !== 1 || cellRight !== 1);
 
     const isEndOfVerticalWall =
-      (y === maxY || [0, 3].includes(cellBelow)) && 
+      (y === maxY || [0, 3].includes(cellBelow)) &&
       cellAbove === 1 &&
-      (cellLeft !== 1 || cellRight !== 1); 
+      (cellLeft !== 1 || cellRight !== 1);
 
     if (!isOuterWall) {
       if (isStartOfHorizontalWall) classes.push('wall-first-horizontal');
       if (isEndOfHorizontalWall) classes.push('wall-last-horizontal');
-      if (isStartOfVerticalWall) classes.push('wall-first-vertical'); 
+      if (isStartOfVerticalWall) classes.push('wall-first-vertical');
       if (isEndOfVerticalWall) classes.push('wall-last-vertical');
     }
 
@@ -373,158 +399,154 @@ useEffect(() => {
     setGameStarted(true);
   };
   const renderLives = () => {
-    return <div className="lives-container"><img className='heart-icon' src='/heart.png'/><span style={{letterSpacing:"2px"}}>X{gameState.lives}</span></div>;
+    return <div className="lives-container"><img className='heart-icon' src='/heart.png' /><span style={{ letterSpacing: "2px" }}>X{gameState.lives}</span></div>;
   };
 
 
 
 
 
-const saveGame = async () => {
-    const user_id =user?.id; // Get the user ID from the Telegram user object
-    const score = gameState.score; // Get the current score
-    const randomUsername =user?.username; // Generate a random username
+  const saveGame = async () => {
+    const user_id = user?.id;
+    const score = gameState.score;
+    const randomUsername = user?.username; 
 
-    // Create an object to store in localStorage
     const gameData = {
-        user_id: user_id,  // Ensure user ID is properly set
-        username: randomUsername,
-        score: score,
+      user_id: user_id,  
+      username: randomUsername,
+      score: score,
     };
 
-    // Save the game data to localStorage
     localStorage.setItem('savedGameData', JSON.stringify(gameData));
 
-    // Retrieve data from localStorage
     const savedData = JSON.parse(localStorage.getItem('savedGameData'));
 
     if (!savedData) {
-        console.error('No saved game data found');
-        return;
+      console.error('No saved game data found');
+      return;
     }
 
-    const { user_id: id, username, score: userScore } = savedData; // Destructure the retrieved data
+    const { user_id: id, username, score: userScore } = savedData; 
 
-    // Post user data
     await postUserData(id, username, userScore);
-};
+  };
 
 
-const quitGame = async () => {
-  await saveGame(); // Ensure game is saved before resetting
+  const quitGame = async () => {
+    await saveGame(); // Ensure game is saved before resetting
 
-  setGameStarted(false);
-  setGameState(initializeGame());
-  
-  // Use setTimeout to allow the save to complete before redirecting
-  setTimeout(() => {
+    setGameStarted(false);
+    setGameState(initializeGame());
+
+    // Use setTimeout to allow the save to complete before redirecting
+    setTimeout(() => {
       window.location.href = "/"; // Redirect or handle navigation
-  }, 1000); // Wait a moment before redirecting
-};
+    }, 1000); // Wait a moment before redirecting
+  };
 
 
 
   return (
     <div className='game-background'>
-    <div className='board-sec'>
-      <GameFooter score={gameState.score} renderLives={renderLives} onResume={resumeGame} saveGame={saveGame}
-                    quitGame={quitGame} onReset={resetGame} togglePause={togglePause}
-          />
-      <div className='game-section'>
-      {!gameStarted && <div style={{alignItems:"center",gap:"10px",justifyContent:"center"}} className="start-message-mobile"><div style={{display:"flex",alignItems:"center",gap:"10px"}}>Click <span style={{display:"flex",alignItems:"center",gap:"10px"}}> <FaRegCirclePlay style={{fontSize:"30px"}}/> button</span></div><div>to Start</div></div>}
-      
-      <div
-        className="game-board"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)`,  
-          gridTemplateRows: `repeat(${BOARD_SIZE}, 1fr)`,
-          maxWidth: '500px', 
-          maxHeight: '500px', 
-          width: '100%',      
-          height: '100%',     
-          aspectRatio: '1 / 1', 
-          margin: '0 auto',   
-          overflow: 'hidden',  
-        }}
-      >
-        {Array.from({ length: BOARD_SIZE * BOARD_SIZE }).map((_, index) => {
-          const x = index % BOARD_SIZE;
-          const y = Math.floor(index / BOARD_SIZE);
-          const isPacman = x === gameState.pacmanPosition.x && y === gameState.pacmanPosition.y;
-          const isGhost = gameState.ghosts.some(ghost => ghost.x === x && ghost.y === y);
-          const isDot = gameState.dots.some(dot => dot.x === x && dot.y === y);
-          const isWall = MAZE[y][x] === 1;
+      <div className='board-sec'>
+        <GameFooter score={gameState.score} renderLives={renderLives} onResume={resumeGame} saveGame={saveGame}
+          quitGame={quitGame} onReset={resetGame} togglePause={togglePause}
+        />
+        <div className='game-section'>
+          {!gameStarted && <div style={{ alignItems: "center", gap: "10px", justifyContent: "center" }} className="start-message-mobile"><div style={{ display: "flex", alignItems: "center", gap: "10px" }}>Click <span style={{ display: "flex", alignItems: "center", gap: "10px" }}> <FaRegCirclePlay style={{ fontSize: "30px" }} /> button</span></div><div>to Start</div></div>}
+          {hasScore && <p style={{color:"gold",fontSize:"14px",textAlign:"left",margin:"10px 0"}}>Last Score: {lastScore}</p>}
+          <div
+            className="game-board"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)`,
+              gridTemplateRows: `repeat(${BOARD_SIZE}, 1fr)`,
+              maxWidth: '500px',
+              maxHeight: '500px',
+              width: '100%',
+              height: '100%',
+              aspectRatio: '1 / 1',
+              margin: '0 auto',
+              overflow: 'hidden',
+            }}
+          >
+            {Array.from({ length: BOARD_SIZE * BOARD_SIZE }).map((_, index) => {
+              const x = index % BOARD_SIZE;
+              const y = Math.floor(index / BOARD_SIZE);
+              const isPacman = x === gameState.pacmanPosition.x && y === gameState.pacmanPosition.y;
+              const isGhost = gameState.ghosts.some(ghost => ghost.x === x && ghost.y === y);
+              const isDot = gameState.dots.some(dot => dot.x === x && dot.y === y);
+              const isWall = MAZE[y][x] === 1;
 
-          const wallClasses = isWall ? `wall ${getWallClasses(x, y)}` : '';
+              const wallClasses = isWall ? `wall ${getWallClasses(x, y)}` : '';
 
-          return (
-            <div
-              key={index}
-              className={`cell ${wallClasses}`}
-              style={{
-                position: 'relative',
-                backgroundColor: isWall ? '#000080' : 'transparent',
-                overflow: 'hidden', 
-              }}
-            >
-              {isPacman && (
-                <Pacman
-                  position={gameState.pacmanPosition}
-                  isInvincible={isInvincible}
-                  direction={direction}
-                />
-              )}
-              {isGhost && gameState.ghosts.map((ghost, ghostIndex) => (
-                ghost.x === x && ghost.y === y ? (
-                  <Ghost key={ghostIndex} image={ghost.image} x={ghost.x} y={ghost.y} />
-                ) : null
-              ))}
-              {isDot && (
-             
-                <img style={{width:"50%",height:"50%"}} src="/dot.jpeg"/>
-              )}
-              {isDying && isPacman && (
+              return (
                 <div
-                  className="dying-animation"
+                  key={index}
+                  className={`cell ${wallClasses}`}
                   style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    backgroundColor: 'red', 
-                    borderRadius: '50%',
-                    animation: 'die-animation 1s forwards', 
+                    position: 'relative',
+                    backgroundColor: isWall ? '#000080' : 'transparent',
+                    overflow: 'hidden',
                   }}
-                />
-              )}
-            </div>
-          );
-        })}
-      </div>
+                >
+                  {isPacman && (
+                    <Pacman
+                      position={gameState.pacmanPosition}
+                      isInvincible={isInvincible}
+                      direction={direction}
+                    />
+                  )}
+                  {isGhost && gameState.ghosts.map((ghost, ghostIndex) => (
+                    ghost.x === x && ghost.y === y ? (
+                      <Ghost key={ghostIndex} image={ghost.image} x={ghost.x} y={ghost.y} />
+                    ) : null
+                  ))}
+                  {isDot && (
+
+                    <img style={{ width: "50%", height: "50%" }} src="/dot.jpeg" />
+                  )}
+                  {isDying && isPacman && (
+                    <div
+                      className="dying-animation"
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: 'red',
+                        borderRadius: '50%',
+                        animation: 'die-animation 1s forwards',
+                      }}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
 
 
 
-     
-    </div>
-    <div className="controls" style={{ marginTop: '20px' }}>
-        <button className='control-button button-up' onClick={() => setDirection('UP')}><MdArrowUpward /></button>
-        <div className='center-buttons'>
-          <button className='control-button button-left' onClick={() => setDirection('LEFT')}><MdArrowBack /></button>
-          <button className='control-button' onClick={handleStartGame}><FaPlay /></button>
-          <button className='control-button button-right' onClick={() => setDirection('RIGHT')}><MdArrowForward /></button>
+
         </div>
-        <button className='control-button button-down' onClick={() => setDirection('DOWN')}><MdArrowDownward /></button>
-      </div>
-      {!gameStarted && <div  className="start-message">Press <span>SPACE</span> to Start</div>}
-     
-      {gameWon && (
-        <GameWin score={gameState.score} onReset={resetGame}/>
-      )}
-      {gameState.gameOver && (
-        <GameOver score={gameState.score} onReset={resetGame}/>
-      )}</div></div>
+        <div className="controls" style={{ marginTop: '20px' }}>
+          <button className='control-button button-up' onClick={() => setDirection('UP')}><MdArrowUpward /></button>
+          <div className='center-buttons'>
+            <button className='control-button button-left' onClick={() => setDirection('LEFT')}><MdArrowBack /></button>
+            <button className='control-button' onClick={handleStartGame}><FaPlay /></button>
+            <button className='control-button button-right' onClick={() => setDirection('RIGHT')}><MdArrowForward /></button>
+          </div>
+          <button className='control-button button-down' onClick={() => setDirection('DOWN')}><MdArrowDownward /></button>
+        </div>
+        {!gameStarted && <div className="start-message">Press <span>SPACE</span> to Start</div>}
+
+        {gameWon && (
+          <GameWin score={gameState.score} onReset={resetGame} />
+        )}
+        {gameState.gameOver && (
+          <GameOver score={gameState.score} onReset={resetGame} />
+        )}</div></div>
   );
 };
 
