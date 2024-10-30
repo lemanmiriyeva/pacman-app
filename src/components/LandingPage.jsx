@@ -3,8 +3,25 @@ import { Link } from 'react-router-dom'
 import './game.css'
 
 function LandingPage() {
+    const [user, setUser] = useState(null);
+    useEffect(() => {
+        // Initialize the Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+    
+        // Get user data from Telegram
+        const userData = tg.initDataUnsafe?.user;
+        if (userData) {
+          setUser(userData);
+        }
+      }, []);
     return (
         <div className='landing-background'>
+             {user ? (
+        <p>Clicked by: {user.first_name} {user.last_name} (@{user.username})</p>
+      ) : (
+        <p>Loading user data...</p>
+      )}
             <div style={{
                 display: "flex",
                 alignItems: "center",
