@@ -34,15 +34,16 @@ const GameBoard = () => {
 
   useEffect(() => {
     // Initialize the Telegram WebApp
-    const tg = window.Telegram.WebApp;
-    tg.ready();
+    const tg = window.Telegram ? window.Telegram.WebApp : null;
+    if (tg) {
+        tg.expand();
 
     // Get user data from Telegram
     const userData = tg.initDataUnsafe?.user;
     if (userData) {
       setUser(userData);
     }
-  }, []);
+  }}, []);
 
   const postUserData = async (id, username, score) => {
 

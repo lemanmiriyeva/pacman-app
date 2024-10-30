@@ -7,15 +7,16 @@ const Leaderboard = () => {
     const [user, setUser] = useState(null);
     useEffect(() => {
         // Initialize the Telegram WebApp
-        const tg = window.Telegram.WebApp;
-        tg.ready();
+        const tg = window.Telegram ? window.Telegram.WebApp : null;
+        if (tg) {
+            tg.expand();
     
         // Get user data from Telegram
         const userData = tg.initDataUnsafe?.user;
         if (userData) {
           setUser(userData);
         }
-      }, []);
+      }}, []);
       const fetchLeaderboard = async () => {
         try {
             const response = await fetch('https://pacman-backend.vercel.app/leaderboard'); // Adjust URL as needed
