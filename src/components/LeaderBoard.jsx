@@ -64,6 +64,7 @@ const Leaderboard = () => {
                 </ul>
             </div>
             <Link to={"/pacman"} className="play-again">PLAY AGAIN</Link>
+            <Link to={"/"} style={{margin:"10px 0",fontSize:"13px",color:"gold"}}>Back to Menu</Link>
             <footer>
                 <p><img style={{width:"24px",height:"24px"}} src="/game.jpeg" alt="" /> SHARE YOUR SCORE <img style={{width:"24px",height:"24px",transform:"scaleX(-1)"}} src="/game.jpeg" alt="" /></p>
             </footer>
