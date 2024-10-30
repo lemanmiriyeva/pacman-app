@@ -28,32 +28,7 @@ const GameBoard = () => {
   const [ghostsExitBox, setGhostsExitBox] = useState(false);
   const [user, setUser] = useState(null);
 
-  const [lastScore, setLastScore] = useState(null);
-  const [hasScore, setHasScore] = useState(false);
-
-  useEffect(() => {
-      const fetchUserScore = async (userId) => {
-          try {
-              const response = await fetch(`https://pacman-backend.vercel.app/user_score/${userId}/`);
-              const data = await response.json();
-              
-              if (data?.last_score !== undefined) {
-                  setLastScore(data.last_score);
-                  setHasScore(true);
-              } else {
-                  setHasScore(false);
-              }
-          } catch (error) {
-              console.error("Failed to fetch user score:", error);
-          }
-      };
-
-      // Assuming you have the user ID from the Telegram API:
-      const userId = user?.id;
-      if (userId) {
-          fetchUserScore(userId);
-      }
-  }, [user]);
+  
 
 
 
@@ -454,7 +429,6 @@ const GameBoard = () => {
         />
         <div className='game-section'>
           {!gameStarted && <div style={{ alignItems: "center", gap: "10px", justifyContent: "center" }} className="start-message-mobile"><div style={{ display: "flex", alignItems: "center", gap: "10px" }}>Click <span style={{ display: "flex", alignItems: "center", gap: "10px" }}> <FaRegCirclePlay style={{ fontSize: "30px" }} /> button</span></div><div>to Start</div></div>}
-          {hasScore && <p style={{color:"gold",fontSize:"14px",textAlign:"left",margin:"10px 0"}}>Last Score: {lastScore}</p>}
           <div
             className="game-board"
             style={{
