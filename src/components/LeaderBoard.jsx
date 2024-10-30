@@ -18,7 +18,7 @@ const Leaderboard = () => {
       }, []);
       const fetchLeaderboard = async () => {
         try {
-            const response = await fetch('http://localhost:8000/leaderboard'); // Adjust URL as needed
+            const response = await fetch('https://pacman-backend.vercel.app/leaderboard'); // Adjust URL as needed
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }

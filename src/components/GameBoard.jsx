@@ -47,7 +47,7 @@ const GameBoard = () => {
     
 
     try {
-        const response = await fetch('http://localhost:8000/add_user/', {  // Replace with your API URL
+        const response = await fetch('https://pacman-backend.vercel.app/add_user/', {  // Replace with your API URL
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
